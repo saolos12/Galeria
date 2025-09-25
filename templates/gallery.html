@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Galería de Imágenes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Almacén de Imágenes del Grupo</h1>
+            <form id="upload-form">
+                <input type="text" id="image-title" placeholder="Título de la imagen" required>
+                <input type="file" id="file-input" accept="image/*" required>
+                <button type="submit" class="button upload-button">Subir Imagen</button>
+            </form>
+        </div>
+    </header>
+    
+    <div class="gallery-container" id="gallery-container">
+        {% for image in images %}
+            <div class="image-card">
+                <a href="{{ url_for('static', filename='images/' + image.filename) }}" download="{{ image.title }}">
+                    <img src="{{ url_for('static', filename='images/' + image.filename) }}" alt="{{ image.title }}" loading="lazy">
+                </a>
+                <div class="image-title">{{ image.title }}</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        const form = document.getElementById('upload-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            const fileInput = document.getElementById('file-input');
+            const titleInput = document.getElementById('image-title');
+            
+            formData.append('file', fileInput.files[0]);
+            formData.append('title', titleInput.value);
+
+            const uploadButton = document.querySelector('.upload-button');
+            const originalText = uploadButton.textContent;
+            uploadButton.textContent = 'Subiendo...';
+            uploadButton.disabled = true;
+
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                const galleryContainer = document.getElementById('gallery-container');
+                const newCard = document.createElement('div');
+                newCard.classList.add('image-card');
+                
+                // Creamos el enlace con la imagen para la descarga
+                newCard.innerHTML = `
+                    <a href="${URL.createObjectURL(fileInput.files[0])}" download="${titleInput.value}">
+                        <img src="${URL.createObjectURL(fileInput.files[0])}" alt="${titleInput.value}" loading="lazy">
+                    </a>
+                    <div class="image-title">${titleInput.value}</div>
+                `;
+                
+                galleryContainer.prepend(newCard);
+
+                fileInput.value = '';
+                titleInput.value = '';
+
+                uploadButton.textContent = originalText;
+                uploadButton.disabled = false;
+
+            } else {
+                alert(data.message);
+                uploadButton.textContent = originalText;
+                uploadButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
