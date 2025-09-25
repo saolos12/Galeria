@@ -19,10 +19,10 @@
     <div class="gallery-container" id="gallery-container">
         {% for image in images %}
             <div class="image-card">
-                <a href="{{ url_for('static', filename='images/' + image.filename) }}" download="{{ image.title }}">
-                    <img src="{{ url_for('static', filename='images/' + image.filename) }}" alt="{{ image.title }}" loading="lazy">
+                <a href="{{ url_for('static', filename='images/' + image['filename']) }}" download="{{ image['title'] }}">
+                    <img src="{{ url_for('static', filename='images/' + image['filename']) }}" alt="{{ image['title'] }}" loading="lazy">
                 </a>
-                <div class="image-title">{{ image.title }}</div>
+                <div class="image-title">{{ image['title'] }}</div>
             </div>
         {% endfor %}
     </div>
@@ -54,7 +54,6 @@
                 const newCard = document.createElement('div');
                 newCard.classList.add('image-card');
                 
-                // Creamos el enlace con la imagen para la descarga
                 newCard.innerHTML = `
                     <a href="${URL.createObjectURL(fileInput.files[0])}" download="${titleInput.value}">
                         <img src="${URL.createObjectURL(fileInput.files[0])}" alt="${titleInput.value}" loading="lazy">
