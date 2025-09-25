@@ -4,14 +4,19 @@ import os
 import psycopg2
 import psycopg2.extras
 
-app = Flask(__name__)
+# Se crea la carpeta para las imágenes si no existe.
+# Este código se ejecuta cada vez que la aplicación se inicia.
 UPLOAD_FOLDER = 'static/images'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Credenciales simples
+# Credenciales simples para el inicio de sesión
 USERS = {'grupo_trabajo': '1234'}
 
-# Obtener la URL de la base de datos desde el entorno de Render
+# Obtener la URL de la base de datos desde el entorno
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if not DATABASE_URL:
     raise ValueError("No se encontró la variable de entorno DATABASE_URL. Asegúrate de configurarla en Render.")
@@ -34,7 +39,7 @@ def init_db():
     cursor.close()
     conn.close()
 
-# Inicializa la base de datos una sola vez al inicio
+# Inicializa la base de datos si la tabla 'images' no existe.
 with get_db_conn() as conn:
     cursor = conn.cursor()
     cursor.execute("""
@@ -47,7 +52,6 @@ with get_db_conn() as conn:
     if not table_exists:
         init_db()
     cursor.close()
-
 
 @app.route('/')
 def index():
@@ -100,6 +104,5 @@ def upload_image():
     return jsonify({'success': False, 'message': 'Error al subir la imagen'})
 
 if __name__ == '__main__':
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
+    # Este bloque solo se usa para desarrollo local
     app.run(debug=True)
